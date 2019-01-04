@@ -34,6 +34,7 @@ def get_crash_files(events):
     return rv
 
 
+@register(SnubaEvent)
 @register(Event)
 class EventSerializer(Serializer):
     _reserved_keys = frozenset(
@@ -287,45 +288,4 @@ class SharedEventSerializer(EventSerializer):
         del result['errors']
         result['entries'] = [e for e in result['entries']
                              if e['type'] != 'breadcrumbs']
-        return result
-
-
-@register(SnubaEvent)
-class SnubaEventSerializer(Serializer):
-    """
-        A bare-bones version of EventSerializer which uses snuba event rows as
-        the source data but attempts to produce a compatible (subset) of the
-        serialization returned by EventSerializer.
-    """
-
-    def get_tags_dict(self, obj):
-        keys = getattr(obj, 'tags.key', None)
-        values = getattr(obj, 'tags.value', None)
-        if keys and values and len(keys) == len(values):
-            return sorted([
-                {
-                    'key': k.split('sentry:', 1)[-1],
-                    'value': v,
-                } for (k, v) in zip(keys, values)
-            ], key=lambda x: x['key'])
-        return []
-
-    def serialize(self, obj, attrs, user):
-        result = {
-            'eventID': six.text_type(obj.event_id),
-            'projectID': six.text_type(obj.project_id),
-            'message': obj.message,
-            'dateCreated': obj.timestamp,
-            'user': {
-                'id': obj.user_id,
-                'email': obj.email,
-                'username': obj.username,
-                'ipAddress': obj.ip_address,
-            },
-        }
-
-        tags = self.get_tags_dict(obj)
-        if tags:
-            result['tags'] = tags
-
         return result
