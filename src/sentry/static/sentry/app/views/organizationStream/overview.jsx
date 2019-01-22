@@ -24,7 +24,17 @@ import ConfigStore from 'app/stores/configStore';
 import GroupStore from 'app/stores/groupStore';
 import SelectedGroupStore from 'app/stores/selectedGroupStore';
 import TagStore from 'app/stores/tagStore';
+<<<<<<< HEAD
 import EventsChart from 'app/views/organizationEvents/eventsChart';
+=======
+import EmptyStateWarning from 'app/components/emptyStateWarning';
+import LoadingError from 'app/components/loadingError';
+import LoadingIndicator from 'app/components/loadingIndicator';
+import {logAjaxError} from 'app/utils/logging';
+import Pagination from 'app/components/pagination';
+import NoProjectMessage from 'app/components/noProjectMessage';
+import ProcessingIssueHint from 'app/views/stream/processingIssueHint';
+>>>>>>> one kinda working that isn't that greatakindaworkinfg
 import SentryTypes from 'app/sentryTypes';
 import StreamActions from 'app/views/stream/actions';
 import StreamFilters from 'app/views/stream/filters';
@@ -616,7 +626,9 @@ const OrganizationStream = createReactClass({
       }
     }
 
-    return (
+    return Object.keys(this.state.memberList || {}).length == 0 ? (
+      <NoProjectMessage organization={this.props.organization} />
+    ) : (
       <div className={classNames(classes)}>
         <div className="stream-content">
           <StreamFilters
