@@ -32,7 +32,6 @@ import LoadingError from 'app/components/loadingError';
 import LoadingIndicator from 'app/components/loadingIndicator';
 import {logAjaxError} from 'app/utils/logging';
 import Pagination from 'app/components/pagination';
-import NoProjectMessage from 'app/components/noProjectMessage';
 import ProcessingIssueHint from 'app/views/stream/processingIssueHint';
 >>>>>>> one kinda working that isn't that greatakindaworkinfg
 import SentryTypes from 'app/sentryTypes';
@@ -626,9 +625,7 @@ const OrganizationStream = createReactClass({
       }
     }
 
-    return Object.keys(this.state.memberList || {}).length == 0 ? (
-      <NoProjectMessage organization={this.props.organization} />
-    ) : (
+    return (
       <div className={classNames(classes)}>
         <div className="stream-content">
           <StreamFilters
