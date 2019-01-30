@@ -323,10 +323,11 @@ class SnubaEvent(EventCommon):
         'tags.value',
     ]
 
+    __repr__ = sane_repr('project_id', 'group_id')
+
     @classmethod
     def get_event(cls, project_id, event_id):
         from sentry.utils import snuba
-        # TODO get event
         result = snuba.raw_query(
             start=datetime.utcfromtimestamp(0),  # will be clamped to project retention
             end=datetime.utcnow(),  # will be clamped to project retention
@@ -336,14 +337,16 @@ class SnubaEvent(EventCommon):
                 'project_id': [project_id],
             },
         )
-        assert len(result['data']) == 1
-        return SnubaEvent(result['data'][0])
+        if 'error' not in result and len(result['data']) == 1:
+            return SnubaEvent(result['data'][0])
+        return None
 
-    def __init__(self, kv):
-        assert set(kv.keys()) == set(self.selected_columns)
-        self.__dict__ = kv
+    def __init__(self, snuba_values):
+        assert set(snuba_values.keys()) == set(self.selected_columns)
+        self.__dict__ = snuba_values
 
-        # TODO how does this interact with bind_data
+        # TODO we could do this lazily when self.data is accessed
+        # or make Event.objects.bind_nodes work with SnubaEvent.
         node_id = SnubaEvent.generate_node_id(self.project_id, self.event_id)
         self.data = NodeData(None, node_id, data=None)
 
